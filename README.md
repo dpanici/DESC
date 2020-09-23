@@ -33,7 +33,17 @@ Additional documentation on specific parts of the code can be found in [document
 ## TODO List
 
 ### Priorities
-
+- documentation
+    - set up readthedocs
+    - API autodoc w/ sphinx
+    - docs for input/output format
+    - example scripts for common operations
+- automated testing/benchmarks
+    - set up travis/jenkins
+    - manually compare to VMEC to find good test cases
+    - small unit tests for individual sections
+    - larger scale regression tests running whole code for low res solution
+- fringe vs ansi indexing option
 - continuation method
     - more testing to make sure it gives good results
     - checkpointing
@@ -41,16 +51,20 @@ Additional documentation on specific parts of the code can be found in [document
 - memory management for gpu
 - what needs jit, which devices
 - precompute SVD for fitting
-- force balance
+- stability calculation
     - project back to get `R_tt`,`Z_tt`
     - incompressibility constraint
 - symmetry, symmetric nodes, best way to enforce and reduce size
-    - masking
+    - masking?
+    - seperate transforms for R,Z?
 - avoiding recompilation
+    - might not really need to if compilation time can be reduced
     - masking?
     - comparing masked arrays for bdry
 - profiling to find speed bottlenecks
     - evaluate bdry error in (v,z) coordinates?
+    - precomputing bc interpolation stuff
+    - or at least properly vectorize it so jax doesnt unroll the loops
 - Don't compute all field components if not necessary
 
 ### Known Issues
