@@ -184,6 +184,24 @@ Another envisioned use of the code is in an interactive sense, where a user coul
 \item Everyone: Write low-level tests for new code created, and think of optimization avenues after profiling is completed
 \end{enumerate}
 
+
+%%%%%%%%%%%%%%%% Start adding sections for Final Report here %%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Obstacles}%Or issues or something, just things we ran into that we had to deal with
+
+\subsection{Git Workflow}
+
+For our project, we decided to go with the git workflow that uses parallel dev and master branches.
+The idea of the workflow is to branch from master to work on feature branches, then merge those to dev where the testing will take place.
+Then, once tests are passed, the feature branch is merged to master.
+
+This works well when the feature branches are all independent of eachother, so merge conflicts on dev are minimized.
+However, in our project we were refactoring an existing code base and a lot of our feature branches had some sort of inter-dependence, especially at the start.
+A case of this is in the creation of the Transform class that is used as the basis for the coordinates at which we evaluate our objective functions.
+The Transform class is essentially the interface between the spectral coefficients that contain the information about an equilibrium and the real-space values like force and energy which we are actually minimizing.
+%to be continued when we figure out what we do with this
+
+
 \printbibliography
 
 \end{document}
