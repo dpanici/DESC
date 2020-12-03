@@ -1,12 +1,17 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
 
-\usepackage{amsmath}
-\usepackage{hyperref}
+
 \usepackage{graphicx}
 \usepackage{xcolor}
 \usepackage[export]{adjustbox}[2011/08/13]
 \usepackage{float}
+\usepackage{amsmath}
+\usepackage{hyperref}
+
+\usepackage{biblatex}
+\addbibresource{sources.bib}
+
 \hypersetup{colorlinks=true}
 
 % shortcuts for covariant basis vectors
@@ -199,8 +204,14 @@ This works well when the feature branches are all independent of eachother, so m
 However, in our project we were refactoring an existing code base and a lot of our feature branches had some sort of inter-dependence, especially at the start.
 A case of this is in the creation of the Transform class that is used as the basis for the coordinates at which we evaluate our objective functions.
 The Transform class is essentially the interface between the spectral coefficients that contain the information about an equilibrium and the real-space values like force and energy which we are actually minimizing.
-%to be continued when we figure out what we do with this
+% TODO: to be continued when we figure out what we do with this
 
+Another thing we learned as we worked in this workflow was the the dev branch should be used only for testing.
+Finding bugs on dev and then fixing them by committing code to dev seemed fine at first.
+However, when we would go to make further changes on our feature branches, we would realize that some bug we fixed on dev is still present on the feature branch.
+This would then require us to have to essentially re-commit the bug fix on the feature branch.
+Finally when we wanted to test the feature branch by merging with dev before merging to master, we would encounter confusing merge conflicts due to having fixed the bug separately on dev and on the feature branch.
+Thus, we learned the hard way that the dev branch should never be advanced alone, and instead should only be advanced by merging feature branches, and all work and fixes should be done on feaure branches to keep dev and the feature branches both up-to-date on bug fixes.
 
 \printbibliography
 
