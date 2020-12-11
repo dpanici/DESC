@@ -124,6 +124,8 @@ We intend the outcome of our project to include a CI automated testing suite tha
 
 \section{Design}
 
+\subsection{Original Design Plan}
+
 The organizational structure is shown in the class diagram in Figure \ref{fig:uml}.
 %
 \begin{figure}[H]
@@ -141,6 +143,17 @@ Once a solution has been found and an output file saved, user can instantiate a 
 Then methods of this class would be called to plot specified parts of the solution (magnetic field, flux surfaces, etc) for specified domains (1-D profiles, 2D plot at a given toroidal cross-section, etc) at specified iterations of the solution (default the final solution, but could plot initial or intermediate solutions).
 
 Another envisioned use of the code is in an interactive sense, where a user could in a script instantiate an Equilibrium and an EquilibriaFamily from an input file, and from there use the solve method of EquilibriaFamily to solve from the initial guess through to the final Equilibrium at the desired resolution. In this way, the user can use the Plot class to visualize not only the final result at the desired resolution, but also to see intermediate solutions (located as earlier Equilibrium objects inside of EquilibriaFamily) as the outer solving loop progressively stepped up the resolution of the solution.
+
+\subsection{Final Implementation}
+While the refactored project largely follows the original design plan, we made a number of changes made during development.
+One such change was to the Equilibrium\_IO class, which is no longer a class, but a collection of classes.
+In order to resolve a circular import error, the IO either had to be fully agnostic of the objects it was saving and loading, or it had to have save and load functions specific to each object.
+In the former case, each object would need its own save and load functions, but the IO would have a homogeneous user interface across all objects; the later required that the user remember or look up functions unique to each object.
+We decided that for reasons of a simpler interface and greater flexibility for future expansion of the IO, the former approach would be used.
+We also split Equilibrium\_IO into a number of abstract base classes: IO, Reader, and Writer.
+This had a number of benefits, including an increase in the overall flexibility of the code, a reduction in the amount of code reproduction necessary for modifying the IO.
+Adding a pickle format was as easy as creating a new subclass of IO called PickleIO which contained format-specific functions, and creating pickle Readers or Writers using a class that inherits from PickleIO and Reader or Writer, respectively.
+This inheritance structure means that all IO objects must conform to a single interface, allowing the save and load functions of particular objects to be agnostic of the file format used.
 
 \section{Development Process}
 
@@ -165,14 +178,14 @@ Thus, we learned the hard way that the dev branch should never be advanced alone
 
 \subsection{Continuous Integration}
 
-The continuous integration workflow with automated tested helped us catch bugs as new code was developed.  
-In our requirements file we initially listed support for the latest version of JAX, version 0.2.5.  
-JAX is still being actively developed and there have been major changes since the DESC code was first written.  
-When pushing changes to the new Transform structure that relies heavily on the use of jax.numpy arrays, the new changes were failing the tests on the virtual machines that were running JAX, but passing on our local computers without JAX.  
-This problem was puzzling, because JAX is intended to replicate most of the usual numpy operations.  
-Around the same time, an independent user of the code had also reported a problem with running JAX on the original DESC repository.  
-It turned out that some of the operations we were using were no longer supported in the newer version of JAX, and reducing the installation requirement to version 0.1.77 resolved the issue.  
-The lesson learned was that maintaining compatibility with other software packages can be laborsome, but frequent testing (from both automated tests and beta users) can help catch problems when they arise.  
+The continuous integration workflow with automated tested helped us catch bugs as new code was developed.
+In our requirements file we initially listed support for the latest version of JAX, version 0.2.5.
+JAX is still being actively developed and there have been major changes since the DESC code was first written.
+When pushing changes to the new Transform structure that relies heavily on the use of jax.numpy arrays, the new changes were failing the tests on the virtual machines that were running JAX, but passing on our local computers without JAX.
+This problem was puzzling, because JAX is intended to replicate most of the usual numpy operations.
+Around the same time, an independent user of the code had also reported a problem with running JAX on the original DESC repository.
+It turned out that some of the operations we were using were no longer supported in the newer version of JAX, and reducing the installation requirement to version 0.1.77 resolved the issue.
+The lesson learned was that maintaining compatibility with other software packages can be laborsome, but frequent testing (from both automated tests and beta users) can help catch problems when they arise.
 
 \section{Profiling Results}
 
