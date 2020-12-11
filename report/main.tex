@@ -124,8 +124,11 @@ We intend the outcome of our project to include a CI automated testing suite tha
 
 \section{Design}
 
+<<<<<<< HEAD
 \subsection{Original Design Plan}
 
+=======
+>>>>>>> 8e6f9f1e42fddabc408765c842897bfa6f1620c1
 The organizational structure is shown in the class diagram in Figure \ref{fig:uml}.
 %
 \begin{figure}[H]
@@ -178,6 +181,7 @@ Thus, we learned the hard way that the dev branch should never be advanced alone
 
 \subsection{Continuous Integration}
 
+<<<<<<< HEAD
 The continuous integration workflow with automated tested helped us catch bugs as new code was developed.
 In our requirements file we initially listed support for the latest version of JAX, version 0.2.5.
 JAX is still being actively developed and there have been major changes since the DESC code was first written.
@@ -186,6 +190,16 @@ This problem was puzzling, because JAX is intended to replicate most of the usua
 Around the same time, an independent user of the code had also reported a problem with running JAX on the original DESC repository.
 It turned out that some of the operations we were using were no longer supported in the newer version of JAX, and reducing the installation requirement to version 0.1.77 resolved the issue.
 The lesson learned was that maintaining compatibility with other software packages can be laborsome, but frequent testing (from both automated tests and beta users) can help catch problems when they arise.
+=======
+The continuous integration workflow with automated tested helped us catch bugs as new code was developed.
+In our requirements file we initially listed support for the latest version of JAX, version 0.2.5.
+JAX is still being actively developed and there have been major changes since the DESC code was first written.
+When pushing changes to the new Transform structure that relies heavily on the use of jax.numpy arrays, the new changes were failing the tests on the virtual machines that were running JAX, but passing on our local computers without JAX.
+This problem was puzzling, because JAX is intended to replicate most of the usual numpy operations.
+Around the same time, an independent user of the code had also reported a problem with running JAX on the original DESC repository.
+It turned out that some of the operations we were using were no longer supported in the newer version of JAX, and reducing the installation requirement to version 0.1.77 resolved the issue.
+The lesson learned was that maintaining compatibility with other software packages can be laborsome, but frequent testing (from both automated tests and beta users) can help catch problems when they arise.
+>>>>>>> 8e6f9f1e42fddabc408765c842897bfa6f1620c1
 
 \section{Profiling Results}
 
