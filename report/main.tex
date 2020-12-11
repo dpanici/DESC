@@ -176,8 +176,38 @@ The lesson learned was that maintaining compatibility with other software packag
 
 \section{Profiling Results}
 
+The actual evaluation time for all of these tests depends on the resolution used.  In this case, it was...
 
+Talk about how the tests were not performed with JAX
 
+%
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\linewidth,center]{./figs/compute_time_opt.png}
+	\caption{Reduction in execution time to compute the equilibrium force balance objective function, relative to the original code, for different stages of optimization.}
+	\label{fig:compute_opt}
+\end{figure}
+%
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\linewidth,center]{./figs/compute_time_rel.png}
+	\caption{Relative portion of time to compute the equilibrium force balance objective function spent in each subfunction, for different stages of optimization.}
+	\label{fig:compute_opt}
+\end{figure}
+%
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\linewidth,center]{./figs/compile_time_opt.png}
+	\caption{Reduction in execution time to evaluate the Fourier-Zernike basis function, relative to the original code, for different stages of optimization.}
+	\label{fig:compute_opt}
+\end{figure}
+%
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\linewidth,center]{./figs/compile_time_rel.png}
+	\caption{Relative portion of time to evaluate the Fourier-Zernike basis function spent in each subfunction, for different stages of optimization.}
+	\label{fig:compute_opt}
+\end{figure}
 
 \bibliography{sources}
 
