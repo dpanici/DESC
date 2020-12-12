@@ -667,7 +667,7 @@ def jacobi_coeffs(l, m):
     return np.fliplr(np.where(lm_even, coeffs, 0))
 
 
-@functools.partial(jit, static_argnums=(1, 2))
+@functools.partial(jit, static_argnums=(1, 2, 3))
 def jacobi(rho, l, m, dr=0):
     """Jacobi polynomials
 
@@ -693,7 +693,7 @@ def jacobi(rho, l, m, dr=0):
     return polyval_vec(coeffs, rho).T
 
 
-@functools.partial(jit, static_argnums=(1))
+@functools.partial(jit, static_argnums=(1, 2, 3))
 def fourier(theta, m, NFP=1, dt=0):
     """Fourier series
 
