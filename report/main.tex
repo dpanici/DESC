@@ -124,11 +124,8 @@ We intend the outcome of our project to include a CI automated testing suite tha
 
 \section{Design}
 
-<<<<<<< HEAD
 \subsection{Original Design Plan}
 
-=======
->>>>>>> 8e6f9f1e42fddabc408765c842897bfa6f1620c1
 The organizational structure is shown in the class diagram in Figure \ref{fig:uml}.
 %
 \begin{figure}[H]
@@ -168,9 +165,19 @@ Then, once tests are passed, the feature branch is merged to master.
 
 This works well when the feature branches are all independent of eachother, so merge conflicts on dev are minimized.
 However, in our project we were refactoring an existing code base and a lot of our feature branches had some sort of inter-dependence, especially at the start.
-A case of this is in the creation of the Transform class that is used as the basis for the coordinates at which we evaluate our objective functions.
+A case of this is in the creation of the Transform class that is used as the base class for the coordinates at which we evaluate our objective functions.
 The Transform class is essentially the interface between the spectral coefficients that contain the information about an equilibrium and the real-space values like force and energy which we are actually minimizing.
-% TODO: to be continued when we figure out what we do with this
+We initially each made separate feature branches off of master with a defined refactoring task for each branch.
+But, when it came time to bring the branches back into master, we realized that the Transform branch, where the Transform class was created and code refactored to work with it, touched many parts of the other branches' files.
+This created a headache when it came time to merge Transform into dev, as not only merge conflicts had to be resolved, but also other working parts from other feature branches were broken.
+
+How we ended up resolving this issue was to first merge the other, less broadly-changing feature branches into master.
+Then, from the Transform branch, we cherry-picked the latest commits onto master into Transform.
+With this, we could then make the necessary changes to allow Transform to play nice with the other branch commits, while also keeping the dev branch strictly for testing and not for bug-fixing commits.
+So, we were able to modify the other necessary parts of the code to allow it to run with the Transform class, and then ended up merging back to master.
+
+From this, we learned that the parallel dev and master workflow works best when feature branches are smaller in scope, and are merged back to master often.
+This way, any individual feature branch does not fall behind the master branch, and each feature branch can more easily be independent of eachother.
 
 Another thing we learned as we worked in this workflow was the dev branch should be used only for testing.
 Finding bugs on dev and then fixing them by committing code to dev seemed fine at first.
@@ -181,7 +188,6 @@ Thus, we learned the hard way that the dev branch should never be advanced alone
 
 \subsection{Continuous Integration}
 
-<<<<<<< HEAD
 The continuous integration workflow with automated tested helped us catch bugs as new code was developed.
 In our requirements file we initially listed support for the latest version of JAX, version 0.2.5.
 JAX is still being actively developed and there have been major changes since the DESC code was first written.
@@ -190,16 +196,6 @@ This problem was puzzling, because JAX is intended to replicate most of the usua
 Around the same time, an independent user of the code had also reported a problem with running JAX on the original DESC repository.
 It turned out that some of the operations we were using were no longer supported in the newer version of JAX, and reducing the installation requirement to version 0.1.77 resolved the issue.
 The lesson learned was that maintaining compatibility with other software packages can be laborsome, but frequent testing (from both automated tests and beta users) can help catch problems when they arise.
-=======
-The continuous integration workflow with automated tested helped us catch bugs as new code was developed.
-In our requirements file we initially listed support for the latest version of JAX, version 0.2.5.
-JAX is still being actively developed and there have been major changes since the DESC code was first written.
-When pushing changes to the new Transform structure that relies heavily on the use of jax.numpy arrays, the new changes were failing the tests on the virtual machines that were running JAX, but passing on our local computers without JAX.
-This problem was puzzling, because JAX is intended to replicate most of the usual numpy operations.
-Around the same time, an independent user of the code had also reported a problem with running JAX on the original DESC repository.
-It turned out that some of the operations we were using were no longer supported in the newer version of JAX, and reducing the installation requirement to version 0.1.77 resolved the issue.
-The lesson learned was that maintaining compatibility with other software packages can be laborsome, but frequent testing (from both automated tests and beta users) can help catch problems when they arise.
->>>>>>> 8e6f9f1e42fddabc408765c842897bfa6f1620c1
 
 \section{Profiling Results}
 
