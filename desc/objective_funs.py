@@ -10,9 +10,10 @@ from desc.configuration import compute_magnetic_field, compute_plasma_current, c
 from desc.boundary_conditions import compute_bdry_err, compute_lambda_err
 from desc.grid import LinearGrid
 from desc.transform import Transform
+from desc.equilibrium_io import IOAble
 
 
-class ObjectiveFunction(ABC):
+class ObjectiveFunction(IOAble,ABC):
     """Objective function used in the optimization of an Equilibrium
 
     Attributes
@@ -42,6 +43,8 @@ class ObjectiveFunction(ABC):
         function that prints equilibrium errors
 
     """
+    _save_attrs_ = ['scalar', 'R_transform', 'Z_transform', 'R1_transform',
+            'Z1_transform', 'L_transform', 'P_transform', 'I_transform']
 
     def __init__(self, scalar:bool=False,
                  R_transform:Transform=None, Z_transform:Transform=None,
@@ -239,7 +242,7 @@ class AccelErrorSpectral(ObjectiveFunction):
         if self.scalar:
             residual = jnp.log1p(jnp.sum(residual**2))
         return residual
-    
+
     def callback(self, x, cRb, cZb, cP, cI, Psi_lcfs, bdry_ratio=1.0, pres_ratio=1.0, zeta_ratio=1.0, errr_ratio=1.0)->None:
         """ Print residuals. Overrides callback method of the parent ObjectiveFunction"""
         cR, cZ, cL = unpack_state(x,
@@ -281,10 +284,7 @@ class ObjectiveFunctionFactory():
     Attributes
     ----------
 
-    Methods
-    -------
-    get_obj_fxn(attributes)
-        takes Equilibrium.attributes and uses it to compute and return the value of the objective function
+        Takes type of objective function and attributes of an equilibrium and uses it to compute and return the corresponding objective function
 
     """
 
@@ -451,7 +451,6 @@ def is_nested(cR, cZ, R_basis, Z_basis, L=10, M=361, zeta=0):
         whether or not the surfaces are nested
 
     """
-
     grid = LinearGrid(L=L, M=M, N=1, NFP=R_basis.NFP, endpoint=True)
     R_transf = Transform(grid, R_basis)
     Z_transf = Transform(grid, Z_basis)
@@ -650,7 +649,7 @@ def compute_force_error_RphiZ(cR, cZ, cP, cI, Psi_lcfs, R_transform,
 def compute_force_error_RddotZddot(cR, cZ, cP, cI, Psi_lcfs, R_transform,
                                    Z_transform, P_transform, I_transform,
                                    pres_ratio, zeta_ratio):
-    """Computes force balance error at each node, projected back onto zernike 
+    """Computes force balance error at each node, projected back onto zernike
     coefficients for R and Z.
 
     Parameters
