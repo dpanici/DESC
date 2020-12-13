@@ -21,7 +21,7 @@
 
 \title{APC 524 Design Document}
 \author{Daniel Dudt, Dario Panici, Evan Yerger}
-\date{October 2020}
+\date{December 15, 2020}
 
 \begin{document}
 
@@ -34,9 +34,10 @@
 Determining the equilibrium of a plasma is crucial for the design and operation of magnetic confinement fusion reactors.
 Equilibrium calculations are used for understanding basic plasma physics, interpreting diagnostic data from experiments, running real-time control systems to stabilize the plasma, and for optimizing the design of future machines.
 Most mainstream magnetic confinement concepts for controlled fusion involve toroidal reactors, such as the tokamak and stellarator.
+The tokamak is characterized by toroidal symmetry, while the stellarator does not have an ignorable coordinate and is fully ``three-dimensional''.
 The nonlinear partial differential equations that describe an equilibrium are computationally challenging to solve, especially for the complicated geometries of stellarators.
 Existing codes such as VMEC \cite{Hirshman1983} are expensive to run and do not always converge to the desired result, making them poorly equipped for future progress.
-DESC \cite{Dudt2020} is a modern code designed to meet the increasing demands of advanced stellarator optimization, and the goal of this project is to make significant contributions to the development of DESC.
+DESC \cite{Dudt2020} is a modern code designed to meet the increasing demands of advanced stellarator performance, and the goal of this project is to make significant contributions to the development of DESC.
 
 \subsection{Theory}
 
@@ -56,7 +57,7 @@ It describes the equilibrium of a static plasma through a force balance equation
 \end{subequations}
 %
 Here $\mathbf{J}$ is the current density, $\mathbf{B}$ is the magnetic field, $p$ is the plasma pressure, and $\mu_0$ is the magnetic constant.
-Combining (\ref{eq:momentum}) and (\ref{eq:Ampere}), a force balance error $\mathbf{F}$ can be defined as
+Combining the force balance (\ref{eq:momentum}) and  Amp\`ere's Law (\ref{eq:Ampere}), a force balance error $\mathbf{F}$ can be defined as
 %
 \begin{equation}
   \label{eq:F}
@@ -64,8 +65,9 @@ Combining (\ref{eq:momentum}) and (\ref{eq:Ampere}), a force balance error $\mat
 \end{equation}
 %
 where $\mathbf{\beta} \equiv B^\zeta \nabla \vartheta - B^\vartheta \nabla \zeta$.
-This is a system of nonlinear partial differential equations (PDEs) and it must be satisfied throughout the entire plasma volume when in equilibrium.
-Using Gauss's law (\ref{eq:Gauss}) and assuming that nested flux surfaces exist $\mathbf{B}\cdot\nabla\rho=B^\rho=0$, the magnetic field can be expressed in the following contravariant form of the toroidal flux coordinate system $(\rho,\vartheta,\zeta)$:
+The flux coordinate system $(\rho,\vartheta,\zeta)$ is a specific choice that makes the magnetic field lines ``appear straight'' to simplify calculations, and is related to the usual toroidal coordinates $(R,\phi,Z)$ as shown in Figure \ref{fig:coords}.
+Equation (\ref{eq:F}) is a system of nonlinear partial differential equations (PDEs) and it must be satisfied throughout the entire plasma volume when in equilibrium.
+Using Gauss's law (\ref{eq:Gauss}) and assuming that nested flux surfaces exist $\mathbf{B}\cdot\nabla\rho=B^\rho=0$, the magnetic field can be expressed in the following contravariant form of the flux coordinate system $(\rho,\vartheta,\zeta)$:
 %
 \begin{equation}
   \label{eq:B}
@@ -73,24 +75,45 @@ Using Gauss's law (\ref{eq:Gauss}) and assuming that nested flux surfaces exist 
 \end{equation}
 %
 Here $\Psi$ is the toroidal magnetic flux and $\iota\equiv d\vartheta/d\zeta = B^\vartheta/B^\zeta$ is the rotational transform.
-The covariant basis vectors $\ev$ and $\ez$ and the jacobian of the coordinate system $\sqrt{g}$ are known from the shapes of the flux surfaces: $R(\rho,\vartheta,\zeta)$ and $Z(\rho,\vartheta,\zeta)$, where $(R,\phi,Z)$ are the usual toroidal coordinates.
-
-In summary, solving the force balance given in (\ref{eq:F}) subject to a magnetic field of the form given in (\ref{eq:B}) will satisfy all of the MHD equilibrium conditions provided in (\ref{eq:equil}).
+The covariant basis vectors $\ev$ and $\ez$ and the jacobian of the coordinate system $\sqrt{g}$ are known from the shapes of the flux surfaces: $R(\rho,\vartheta,\zeta)$ and $Z(\rho,\vartheta,\zeta)$.
+Solving the force balance given in (\ref{eq:F}) subject to a magnetic field of the form given in (\ref{eq:B}) will satisfy all of the MHD equilibrium conditions provided in (\ref{eq:equil}).
 The actual scalar equations that get minimized are
 %
 \begin{subequations}
+  \label{eq:f}
   \begin{align}
-    f_\rho &= F_\rho \lVert\nabla\rho\rVert_2 \sqrt{g} \Delta\rho\Delta\vartheta\Delta\zeta \text{sign}\left(\nabla\rho\cdot\er\right) \\
-    f_\beta &= F_\beta \lVert\mathbf{\beta}\rVert_2 \sqrt{g} \Delta\rho\Delta\vartheta\Delta\zeta \text{sign}\left(\mathbf{\beta}\cdot\ev\right) \text{sign}\left(\mathbf{\beta}\cdot\ez\right)
+    f_\rho(R,Z) &= F_\rho \lVert\nabla\rho\rVert_2 \sqrt{g} \Delta\rho\Delta\vartheta\Delta\zeta \text{sign}\left(\nabla\rho\cdot\er\right) \\
+    f_\beta(R,Z) &= F_\beta \lVert\mathbf{\beta}\rVert_2 \sqrt{g} \Delta\rho\Delta\vartheta\Delta\zeta \text{sign}\left(\mathbf{\beta}\cdot\ev\right) \text{sign}\left(\mathbf{\beta}\cdot\ez\right)
   \end{align}
 \end{subequations}
 %
 along with additional equations to enforce the boundary conditions.
+This is known as an ``inverse formulation'' because the toroidal coordinates are solved for in terms of the flux coordinates, which are treated as the independent variables.
+Calculating the equilibrium magnetic field is equivalent to determining the transformation between these two coordinate systems.
 
-The PDEs are solved using pseudospectral methods.
-The flux surfaces are represented by the coefficients of global Fourier-Zernike basis functions, so their values and partial derivatives are known everywhere in the computational domain.
-These state variables are then interpolated at a set of collocation points where the nonlinear calculations are performed, and the force balance errors are minimized at those nodes.
-DESC is essentially an optimization code that seeks to find a set of flux surfaces $\mathbf{x}$ that solve a system of equations representing the equilibrium conditions: $\mathbf{F}(\mathbf{x}) \approx \mathbf{0}$.
+The PDEs are discretized using pseudospectral methods.
+The flux surfaces are represented by the coefficients of a global Fourier-Zernike basis set of the form:
+%
+\begin{subequations}
+	\begin{align}
+	\label{eq:R_basis}
+	R(\rho,\vartheta,\zeta) &= \sum_{n=-N}^{N} \sum_{m=-M}^{M} \sum_{l\in L} R_{lmn} \mathcal{Z}^{m}_{l}(\rho,\vartheta) \mathcal{F}^{n}(\zeta) \\
+	\label{eq:Z_basis}
+	Z(\rho,\vartheta,\zeta) &= \sum_{n=-N}^{N} \sum_{m=-M}^{M} \sum_{l\in L} Z_{lmn} \mathcal{Z}^{m}_{l}(\rho,\vartheta) \mathcal{F}^{n}(\zeta)
+	\end{align}
+\end{subequations}
+%
+where $\mathcal{Z}^{m}_{l}$ is the Zernike polynomial with radial mode $l$ and azimuthal mode $m$, $\mathcal{F}^{n}$ is a Fourier component with wave number $n$, and $L = |m|, |m|+2, |m|+4, \ldots, 2 M - |m|$.
+From the state vector of coefficients $\mathbf{x} = [R_{lmn}, Z_{lmn}]^T$, the values and partial derivatives of $R(\rho,\vartheta,\zeta)$ and $Z(\rho,\vartheta,\zeta)$ are transformed to physical space at a set of collocation points.
+All of the nonlinear calculations involved to compute (\ref{eq:f}) are performed in physical space at these nodes, resulting in a residual vector $\mathbf{f} = [f_\rho, f_\beta]^T$.
+Starting from an initial guess, DESC computes the equilibrium solution by finding the flux surface geometry that minimize these errors on a given grid of collocation points: $\mathbf{f}(\mathbf{x}) \approx \mathbf{0}$
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.8\linewidth,center]{./figs/coordinates.pdf}
+	\caption{Toroidal coordinate system $(R,\phi,Z)$ and the flux coordinates $(\rho,\vartheta,\zeta)$.}
+	\label{fig:coords}
+\end{figure}
 
 \section{Project Goals}
 
