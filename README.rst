@@ -31,7 +31,7 @@ Refer to Inputs_ for documentation on how to format the input file.
 The equilibrium solution is output in both an ASCII text file and a HDF5 binary file, whose formats are detailed in Outputs_. 
 
 As an example usage, to use DESC to solve for the equilibrium of the high-beta, D-shaped plasma described with the DSHAPE input file, the command from the :bash:'desc' directory is 
-:bash:'python -u -m desc -p examples/DESC/DSHAPE'
+:bash:`python -u -m desc -p examples/DESC/DSHAPE`
 
 .. _Installation: https://desc-apc524.readthedocs.io/en/latest/installation.html
 .. _Command Line Interface: https://desc-apc524.readthedocs.io/en/latest/command_line.html
