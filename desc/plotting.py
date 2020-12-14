@@ -163,7 +163,7 @@ class Plot:
         #theslice = self.grid_slice_1d(grid, dim)
         name_dict = self.format_name(name)
         ary = self.compute(eq, name_dict, grid)
-        ax = self.format_ax(ax)
+        fig, ax = self.format_ax(ax)
         ax.plot(grid.nodes[:,plot_axis], ary)
         ax.set_xlabel(self.axis_labels[plot_axis])
         ax.set_ylabel(self.name_label(name_dict))
