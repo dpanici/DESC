@@ -249,6 +249,7 @@ It turned out that some of the operations we were using were no longer supported
 The lesson learned was that maintaining compatibility with other software packages can be laborsome, but frequent testing (from both automated tests and beta users) can help catch problems when they arise.
 
 \section{Profiling \& Optimization}
+\label{sec:profiling}
 
 Once a stable version of the refactored code was reached, we performed profiling to measure its performance.
 Although DESC is intended to be primarily run with JAX on large clusters that have multiple GPUs, the profiling was performed on a CPU without JAX.
@@ -283,7 +284,7 @@ Since the Fourier basis evaluation is also called while pre-computing the transf
 The build process is now dominated by the Jacobi polynomial evaluations, which comprise the radial terms of the Zernike basis functions (see Figure \ref{fig:compile_time_rel}).
 
 With both of these optimizations combined, the time to compute the objective function was reduced by 28\% from about 5 ms to approximately 4 ms.
-The equilibrium force balance errors and boundary condition errors still take roughly the same amount of time to compute (see Figure \ref{fig:compute_time_rel}), and there is certainly more room for improvement with additional rounds of profiling.
+The equilibrium force balance errors and boundary condition errors still take roughly the same amount of time to compute, as they did in the initial reference version (see Figure \ref{fig:compute_time_rel}).
 
 \begin{figure}[H]
 	\centering
@@ -327,6 +328,7 @@ Should the EquilibriumSolver object be able to create new Equilibrium objects, e
 We have in our UML diagram an outline of what we think is the best to approach, but it is the concrete answers to these questions that we will need to decide in order to finish the implementation of our complete design.
 
 \subsection{Expand Testing Suite}
+
 While we did increase the percentage of code covered by tests by roughly 20\%, there is still a lot of room for improvement.
 Increasing the modularity of the code helped us to more easily implement unit tests for the lower level, simpler components.
 Though there are still simple classes left for us to cover with unit tests, among what is remaining are the classes that take these simpler objects and use them in a more complex way to return some physically meaningful quantites.
@@ -342,11 +344,18 @@ The second is to use the mock object features of the Python unit testing modules
 This would work by allowing us to create mock objects to take the place of objects that would normally be created by reading an input file and performing intermediate calculations.
 We would then be able to create simple scenarios where we could more easily check the expected output, when we have control over exactly what the inputs into the function are.
 
-
 \subsection{Further Profiling \& Optimization}
 
-This will necessarily depend on the results of the profiling, but some avenues we anticipate we could take is to parallelize any embarrasingly parallel tasks in the code to work across multiple CPUs. There are different tools we can use to do this, one route could be to utilize the parallel processing Python module multiprocessing, which allows for splitting tasks across multiple threads of a CPU. Additional possible optimization paths could relate to the GPU. Currently, the solution resolution possible running DESC and utilizing the GPU is limited by memory on the GPU, as the jacobian necessary for the optimization algorithm's computations on the GPU becomes larger than the memory on the GPU can handle. One possible way we can explore to remedy this is to split up the jacobian and evaluate parts of the computation on different GPUs in parallel, or on the same GPU but only in chunks at a time, and recover the full result on the CPU, to avoid GPU memory issues.
-
+A preliminary round of profiling and code optimization was performed as mentioned in Section \ref{sec:profiling}, but there is certainly more room for improvement.
+Profiling is an ongoing effort, but our time was limited during this project and we decided to prioritize the code refactoring over optimization of existing code.
+It would be helpful to profile additional test cases with higher spectral resolutions to understand how the relative bottlenecks scale with the dimensionality of the system.
+These same tests then need to be reproduced with JAX in use to check if there are opportunities specific to their overloading of the usual NumPy operations.
+We also need to determine when it is advantageous to JIT functions and optimize the code to reduce those compile times.
+Another need is to profile on different computer architectures, including with GPUs.
+DESC currently has some GPU compatibility and basic parallelization, but this avenue has not been explored in much detail yet.
+Finally, work is needed to optimize memory management.
+The Jacobian matrix calculations can consume large amounts of memory at high resolutions, and storing this data could be especially problematic when running on GPUs.
+We should explore potential solutions to remedy this, such as splitting up the Jacobian and evaluating it on multiple GPUs in parallel.
 
 \bibliography{sources}
 
