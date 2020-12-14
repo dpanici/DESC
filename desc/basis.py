@@ -161,7 +161,6 @@ class PowerSeries(Basis):
             self._Basis__N = 0
             self._Basis__NFP = 1
             self._Basis__sym = None
-
             self._Basis__modes = self.get_modes(L=self._Basis__L)
 
             self._enforce_symmetry_()
@@ -256,7 +255,6 @@ class DoubleFourierSeries(Basis):
             self._Basis__N = N
             self._Basis__NFP = NFP
             self._Basis__sym = sym
-
             self._Basis__modes = self.get_modes(M=self._Basis__M, N=self._Basis__N)
 
             self._enforce_symmetry_()

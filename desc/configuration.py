@@ -4,6 +4,7 @@ from collections.abc import MutableSequence
 from desc.backend import jnp, put, opsindex, cross, dot, TextColors, Tristate
 from desc.basis import Basis, PowerSeries, DoubleFourierSeries, FourierZernikeBasis
 from desc.grid import Grid, LinearGrid, ConcentricGrid
+from desc.transform import Transform
 from desc.init_guess import get_initial_guess_scale_bdry
 from desc.boundary_conditions import format_bdry
 #from desc import equilibrium_io as eq_io
@@ -44,14 +45,14 @@ class Configuration(IOAble):
        information, such as the magnetic field and plasma currents.
     """
     _save_attrs_ = ['cR', 'cZ', 'cL', 'cRb', 'cZb', 'cP',
-                             'cI', 'Psi', 'NFP', 'R_basis',
-                             'Z_basis', 'L_basis', 'Rb_basis',
-                             'Zb_basis', 'P_basis', 'I_basis']
+                    'cI', 'Psi', 'NFP', 'R_basis',
+                    'Z_basis', 'L_basis', 'Rb_basis',
+                    'Zb_basis', 'P_basis', 'I_basis']
     _object_lib_ = {'PowerSeries' : PowerSeries,
-                            'DoubleFourierSeries'   : DoubleFourierSeries,
-                            'FourierZernikeBasis'   : FourierZernikeBasis,
-                            'LinearGrid'            : LinearGrid,
-                            'ConcentricGrid'        : ConcentricGrid}
+                    'DoubleFourierSeries'   : DoubleFourierSeries,
+                    'FourierZernikeBasis'   : FourierZernikeBasis,
+                    'LinearGrid'            : LinearGrid,
+                    'ConcentricGrid'        : ConcentricGrid}
 
     def __init__(self, inputs:dict=None, load_from=None, file_format:str='hdf5', obj_lib=None) -> None:
         """Initializes a Configuration
@@ -525,7 +526,6 @@ class Equilibrium(Configuration,IOAble):
     def __init__(self, inputs:dict=None, load_from=None, file_format:str='hdf5', obj_lib=None) -> None:
         super().__init__(inputs=inputs, load_from=load_from, file_format=file_format, obj_lib=obj_lib)
 
-
     def _init_from_inputs_(self, inputs:dict=None) -> None:
         if inputs is None:
             inputs = self.inputs
@@ -561,6 +561,27 @@ class Equilibrium(Configuration,IOAble):
     @initial.setter
     def initial(self, conf:Configuration) -> None:
         self.__initial = conf
+
+    @property
+    def x(self):
+        return self._Configuration__x
+
+    @x.setter
+    def x(self, x) -> None:
+        self._Configuration__x = x
+        self._Configuration__cR, self._Configuration__cZ, self.__cL = \
+            unpack_state(self._Configuration__x,
+                         self._Configuration__R_basis.num_modes,
+                         self._Configuration__Z_basis.num_modes)
+        self.__solved = True
+
+    @property
+    def solved(self) -> bool:
+        return self.__solved
+
+    @property
+    def initial(self) -> Configuration:
+        return self.__initial
 
     @property
     def x(self):
