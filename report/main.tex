@@ -106,7 +106,11 @@ The flux surfaces are represented by the coefficients of a global Fourier-Zernik
 where $\mathcal{Z}^{m}_{l}$ is the Zernike polynomial with radial mode $l$ and azimuthal mode $m$, $\mathcal{F}^{n}$ is a Fourier component with wave number $n$, and $L = |m|, |m|+2, |m|+4, \ldots, 2 M - |m|$.
 From the state vector of coefficients $\mathbf{x} = [R_{lmn}, Z_{lmn}]^T$, the values and partial derivatives of $R(\rho,\vartheta,\zeta)$ and $Z(\rho,\vartheta,\zeta)$ are transformed to physical space at a set of collocation points.
 All of the nonlinear calculations involved to compute (\ref{eq:f}) are performed in physical space at these nodes, resulting in a residual vector $\mathbf{f} = [f_\rho, f_\beta]^T$.
-Starting from an initial guess, DESC computes the equilibrium solution by finding the flux surface geometry that minimize these errors on a given grid of collocation points: $\mathbf{f}(\mathbf{x}) \approx \mathbf{0}$
+Starting from an initial guess, DESC computes the equilibrium solution by finding the flux surface geometry that minimize these errors on a given grid of collocation points: $\mathbf{f}(\mathbf{x}) \approx \mathbf{0}$.
+This optimization process is performed with a quasi-Newton method, and will be referred to as the ``inner loop'' of the DESC algorithm.
+The ``outer loop'' performs a sequence of these optimizations with different input parameters, and can perturb the previous solution to give a good initial guess for the next optimization step with the new inputs.
+For example, this outer loop can be used to increase the numerical resolution from a crude initial solution to one with many spectral modes.
+Another application is to perform scans in solution space over a physics parameter such as pressure, by starting from a vacuum solution and then solving for the equilibrium at increasingly higher pressures.
 
 \begin{figure}
 	\centering
@@ -119,15 +123,22 @@ Starting from an initial guess, DESC computes the equilibrium solution by findin
 
 \subsection{Initial State}
 
-To perform the minimization of force error in the plasma is cast as an optimization problem in DESC, with the state variables that we can vary to minimize the force error being the Fourier-Zernike coefficients that represent the flux surfaces.
-Currently, the code takes as inputs the Fourier series representation of the fixed plasma boundary, as well as power series for the pressure and rotational transform profiles.
-Using these, it then creates Fourier-Zernike representations of the flux surfaces through the whole domain, as well as the derivatives of these flux surfaces positions ($\frac{\partial R}{\partial \rho}$, $\frac{\partial R}{\partial \theta}$, etc) that are necessary to compute the force balance error given by Eq. \eqref{eq:F}.
-The NumPy \cite{NumPy} library is used to create these arrays as well as perform the array operations needed to compute all the necessary terms.
+Before undertaking this project, DESC already existed as an open-source Python software package.
+The user interface was to create an input file detailing all of the solver parameters, and then pass that input file as a command line argument.
+The user could also pass flags to plot the results, but this output was only preset routines without much opportunity for customization.
+Internally, the DESC algorithm was implemented sequentially with a functional rather than class structure.
+Although the functions were well documented, each had a unique call signature and there was a lack of a common interface between different parts of the code.
+New features were added to the code by creating another option in the input file format, and handling the new cases with if-else logic in the main driver script.
 
-Then, the SciPy \cite{SciPy} optimization library is used for the optimization step, where the state variables of our system (the Fourier-Zernike coefficients representing the flux surfaces) are varied in order to minimize our objective function Eq. \eqref{eq:F} in a least-squares sense.
-The optimization routines used rely on information of how the objective function changes with respect to each variable in our system, which is encoded in the Jacobian of the system. This is easily computed in DESC with the use of JAX \cite{JAX}, an open source machine learning package for Python.
-JAX provides automatic differentiation of arbitrary Python and NumPy functions, which allows us to easily compute the Jacobian matrix $\frac{\partial\mathbf{F}}{\partial\mathbf{x}}$ for use within our root-finding algorithms.
-It also provides just-in-time compiling and optimization so that we can enjoy the flexibility of high-level functions without sacrificing performance. Finally, it also allows for operations to be computed on a GPU, which can greatly accelerate the matrix-vector operations necessary for the optimization algorithm.
+DESC relies on other software packages to outsource some functionality.
+The NumPy \cite{NumPy} library is used to handle and vectorize all array operations in the system of equations.
+Initially, all of the optimization routines for the inner loop were provided by the SciPy \cite{SciPy} optimization library.
+Many of these routines rely on information of how the objective function changes with respect to state variables, which is encoded in the Jacobian matrix $\frac{\partial\mathbf{f}}{\partial\mathbf{x}}$.
+This information is also needed to perform the outer loop perturbations, so it is important for DESC to compute the Jacobian matrix quickly and accurately.
+This is accomplished with the use of JAX \cite{JAX}, an open source machine learning package for Python.
+JAX provides automatic differentiation of arbitrary Python functions by overloading NumPy operations, as well as just-in-time (JIT) compilation and optimization for speed-up on repeated function calls.
+It also allows for operations to be computed on a GPU, which can greatly accelerate the matrix-vector operations necessary for the optimization algorithm.
+The initial state of the code had JAX implemented, but was disorganized about when it should be used over regular NumPy operations.
 
 \subsection{Goals?}
 
