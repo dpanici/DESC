@@ -440,7 +440,7 @@ class Configuration(IOAble):
         cov_basis = compute_covariant_basis(coord_der, axis=grid.axis)
         jacobian = compute_jacobian(coord_der, cov_basis, axis=grid.axis)
         magnetic_field = compute_magnetic_field(cov_basis, jacobian, self.__cI,
-                                                self.__Psi_lcfs, I_transform)
+                                                self.__Psi, I_transform)
         return magnetic_field
 
     def compute_plasma_current(self, grid:Grid) -> dict:
@@ -452,7 +452,7 @@ class Configuration(IOAble):
         cov_basis = compute_covariant_basis(coord_der, axis=grid.axis)
         jacobian = compute_jacobian(coord_der, cov_basis, axis=grid.axis)
         magnetic_field = compute_magnetic_field(cov_basis, jacobian, self.__cI,
-                                                self.__Psi_lcfs, I_transform)
+                                                self.__Psi, I_transform)
         plasma_current = compute_plasma_current(coord_der, cov_basis, jacobian,
                                         magnetic_field, self.__cI, I_transform)
         return plasma_current
@@ -466,7 +466,7 @@ class Configuration(IOAble):
         cov_basis = compute_covariant_basis(coord_der, axis=grid.axis)
         jacobian = compute_jacobian(coord_der, cov_basis, axis=grid.axis)
         magnetic_field = compute_magnetic_field(cov_basis, jacobian, self.__cI,
-                                                self.__Psi_lcfs, I_transform)
+                                                self.__Psi, I_transform)
         magnetic_field_mag = compute_magnetic_field_magnitude(cov_basis,
                                       magnetic_field, self.__cI, I_transform)
         return magnetic_field_mag
@@ -483,7 +483,7 @@ class Configuration(IOAble):
         con_basis = compute_contravariant_basis(coord_der, cov_basis, jacobian,
                                                 axis=grid.axis)
         magnetic_field = compute_magnetic_field(cov_basis, jacobian, self.__cI,
-                                                self.__Psi_lcfs, I_transform)
+                                                self.__Psi, I_transform)
         plasma_current = compute_plasma_current(coord_der, cov_basis, jacobian,
                                         magnetic_field, self.__cI, I_transform)
         force_mag = compute_force_magnitude(coord_der, cov_basis, con_basis,
@@ -1132,7 +1132,7 @@ def compute_jacobian(coord_der, cov_basis, axis=jnp.array([]), derivs='force'):
     return jacobian
 
 
-def compute_magnetic_field(cov_basis, jacobian, cI, Psi_lcfs, I_transform, derivs='force'):
+def compute_magnetic_field(cov_basis, jacobian, cI, Psi, I_transform, derivs='force'):
     """Computes magnetic field components at node locations
 
     Parameters
@@ -1145,7 +1145,7 @@ def compute_magnetic_field(cov_basis, jacobian, cI, Psi_lcfs, I_transform, deriv
         and partial derivatives, such as computed by ``compute_jacobian``.
     cI : ndarray
         coefficients to pass to rotational transform function
-    Psi_lcfs : float
+    Psi : float
         total toroidal flux (in Webers) within LCFS
     I_transform : Transform
         object with transform method to go from spectral to physical space with derivatives
@@ -1173,9 +1173,9 @@ def compute_magnetic_field(cov_basis, jacobian, cI, Psi_lcfs, I_transform, deriv
     iota_r = I_transform.transform(cI, 1)
 
     # toroidal flux
-    magnetic_field['psi'] = Psi_lcfs*r**2
-    magnetic_field['psi_r'] = 2*Psi_lcfs*r
-    magnetic_field['psi_rr'] = 2*Psi_lcfs*jnp.ones_like(r)
+    magnetic_field['psi'] = Psi*r**2
+    magnetic_field['psi_r'] = 2*Psi*r
+    magnetic_field['psi_rr'] = 2*Psi*jnp.ones_like(r)
 
     # contravariant B components
     magnetic_field['B^rho'] = jnp.zeros_like(r)
