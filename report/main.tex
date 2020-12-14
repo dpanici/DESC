@@ -172,7 +172,7 @@ The organizational structure is shown in the class diagram in Figure \ref{fig:um
 %
 \begin{figure}[H]
   \centering
-  \includegraphics[width=1.6\linewidth,center]{./figs/UML_06.pdf}
+  \includegraphics[width=\linewidth,center]{./figs/UML_06.pdf}
   \caption{Class Diagram}
   \label{fig:uml}
 \end{figure}
@@ -188,15 +188,32 @@ Another envisioned use of the code is in an interactive sense, where a user coul
 
 \subsection{Final Implementation}
 
-While the refactored project largely follows the original design plan, we made a number of changes made during development.
-One such change was to the Equilibrium\_IO class, which is no longer a class, but a collection of classes.
-In order to resolve a circular import error, the IO either had to be fully agnostic of the objects it was saving and loading, or it had to have save and load functions specific to each object.
-In the former case, each object would need its own save and load functions, but the IO would have a homogeneous user interface across all objects; the later required that the user remember or look up functions unique to each object.
-We decided that for reasons of a simpler interface and greater flexibility for future expansion of the IO, the former approach would be used.
-We also split Equilibrium\_IO into a number of abstract base classes: IO, Reader, and Writer.
-This had a number of benefits, including an increase in the overall flexibility of the code, a reduction in the amount of code reproduction necessary for modifying the IO.
-Adding a pickle format was as easy as creating a new subclass of IO called PickleIO which contained format-specific functions, and creating pickle Readers or Writers using a class that inherits from PickleIO and Reader or Writer, respectively.
-This inheritance structure means that all IO objects must conform to a single interface, allowing the save and load functions of particular objects to be agnostic of the file format used.
+While the project largely follows the original design plan, we made a number of changes made during development.
+One such change was to the IO, which we were unable to implement in the way we had first imagined because it resulted in circular import errors.
+Either objects could depend on the IO in some way or the IO could depend on the objects in some way, but both could not happen while keeping the IO functions and objects in different modules.
+We decided to have the objects depend on the IO, as it would allow for a homogeneous and simple interface when saving and loading objects.
+Any object we wanted to make savable inherits from the abstract base class IOAble, which includes methods to save and initialize the object from a file. 
+Child classes need only specify a method to initialize from initialization arguments (i.e. initializing from scratch), a list of attributes to save and load, and a dictionary of classes it may need to initialize on the fly during a load from file. 
+This change is reflected in the updated UML diagram (Figure INCLUDE NEW UML DIAGRAM).
+
+We also altered the IO back end code significantly towards a number of goals: a homogeneous interface across file formats, protecting read/write permissions, and less code reproduction. 
+Starting with an abstract base class IO, which includes methods handling how all files will be treated, we specify that files should be closed on garbage collection, and files of the specified type should be opened if the class constructor is passed a file path. 
+Classes specifying IO operations specific to file-format, like opening files and creating sub directories inherit directly from IO. 
+Parallel to this, we specify the abstract base classes Reader and Writer, which specify the interface for any IO class that reads from or writes to file, respectively. 
+The utility of this inheritance structure, shown in Figure \ref{fig:EQIOUML}, is that one only needs to specify a file format wrapper for IO and read or write functions to have a reader or writer that can be hot-swapped for any other. 
+
+
+\begin{figure}[h]
+	%\includegraphics[width=\textwidth]{}
+	\caption{UML Diagram for the final implementation of DESC.} %new UML diagram here
+	\label{fig:newUML}
+\end{figure}
+
+\begin{figure}[h]
+	\includegraphics[width=\textwidth]{figs/Equilibrium_IO_UML.pdf}
+	\caption{UML Diagram for the new Eqiulibrium IO setup.}
+	\label{fig:EQIOUML}
+\end{figure}
 
 \section{Development Process}
 
