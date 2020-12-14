@@ -9,7 +9,7 @@ from desc.init_guess import get_initial_guess_scale_bdry
 from desc.boundary_conditions import format_bdry
 #from desc import equilibrium_io as eq_io
 from desc.equilibrium_io import IOAble, reader_factory, writer_factory
-
+from desc.transform import Transform
 
 def unpack_state(x, nR, nZ):
     """Unpacks the optimization state vector x into cR, cZ, cL components
@@ -39,11 +39,14 @@ def unpack_state(x, nR, nZ):
     cL = x[nR+nZ:]
     return cR, cZ, cL
 
+
 class Configuration(IOAble):
+
     """Configuration constains information about a plasma state, including the
        shapes of flux surfaces and profile inputs. It can compute additional
        information, such as the magnetic field and plasma currents.
     """
+
     _save_attrs_ = ['cR', 'cZ', 'cL', 'cRb', 'cZb', 'cP',
                     'cI', 'Psi', 'NFP', 'R_basis',
                     'Z_basis', 'L_basis', 'Rb_basis',
@@ -122,6 +125,7 @@ class Configuration(IOAble):
                 cR :
                 cZ :
                 cL :
+
 
         Raises
         ------
@@ -285,7 +289,15 @@ class Configuration(IOAble):
     @cZ.setter
     def cZ(self, cZ) -> None:
         self.__cZ = cZ
+        
+    @property
+    def cL(self):
+        return self.__cL
 
+    @cL.setter
+    def cL(self, cL) -> None:
+        self.__cZ = cL
+        
     @property
     def cRb(self):
         return self.__cRb
@@ -503,6 +515,7 @@ class Configuration(IOAble):
             File mode for file referenced by save_to. Only applicable if
             save_to is a string file path. (Default = 'w')
 
+
         Returns
         _______
         None
@@ -657,7 +670,7 @@ class EquilibriaFamily(MutableSequence,IOAble):
         writer = writer_factory(self.inputs['output_path'],
                 file_format=self._file_format_, file_mode='w')
         writer.close()
-        #self.append(Equilibrium(inputs=self.inputs))
+        self.append(Equilibrium(inputs=self.inputs))
         return None
 
     #def _init_from_file_(self, load_from=None, file_format=None):
@@ -1345,6 +1358,7 @@ def compute_magnetic_field_magnitude(cov_basis, magnetic_field, cI, I_transform)
     """
     # notation: 1 letter subscripts denote derivatives, eg psi_rr = d^2 psi / dr^2
     # subscripts (superscripts) denote covariant (contravariant) components of the field
+    
     magnetic_field_mag = {}
     iota = I_transform.transform(cI, 0)
 

@@ -89,12 +89,12 @@ def main(cl_args=None):
 
     # solve equilibrium
     equil_fam, timer = solve_eq_continuation(
-        ir.inputs, checkpoint_filename=None, device=device)
-      # ir.inputs, checkpoint_filename=ir.output_path, device=device)
+        ir.inputs, checkpoint_filename=ir.output_path, device=device)
 
     if ir.args.plot:
 
         equil_fam.save()
+
         equil_init = equil_fam[0].initial
         equil = equil_fam[-1]
         print('Plotting flux surfaces, this may take a few moments...')
