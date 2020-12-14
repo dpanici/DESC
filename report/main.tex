@@ -161,7 +161,7 @@ The new modularity will also make it easier to perform unit testing to ensure th
 The existing continuous integration (CI) automated testing suite only covered 22\% of the DESC code, and our goal was to increase this converage to over 50\%.
 Computational efficiency is also essential for DESC, since it was developed in the hope of finding stellarator equilibria faster than other codes.
 Once the major refactoring was complete, we planned to profile the code to identify the bottlenecks and pursue any opportunities for optimization.
-Finally, we also intended to create a class responsible for plotting 
+Finally, we also intended to create a class responsible for plotting
 Accurate solutions are only useful if they can be viewed, and the goal of this effort was to provide the user with a more flexible and interactive analysis tool.
 
 \section{Design}
@@ -192,15 +192,15 @@ While the project largely follows the original design plan, we made a number of 
 One such change was to the IO, which we were unable to implement in the way we had first imagined because it resulted in circular import errors.
 Either objects could depend on the IO in some way or the IO could depend on the objects in some way, but both could not happen while keeping the IO functions and objects in different modules.
 We decided to have the objects depend on the IO, as it would allow for a homogeneous and simple interface when saving and loading objects.
-Any object we wanted to make savable inherits from the abstract base class IOAble, which includes methods to save and initialize the object from a file. 
-Child classes need only specify a method to initialize from initialization arguments (i.e. initializing from scratch), a list of attributes to save and load, and a dictionary of classes it may need to initialize on the fly during a load from file. 
+Any object we wanted to make savable inherits from the abstract base class IOAble, which includes methods to save and initialize the object from a file.
+Child classes need only specify a method to initialize from initialization arguments (i.e. initializing from scratch), a list of attributes to save and load, and a dictionary of classes it may need to initialize on the fly during a load from file.
 This change is reflected in the updated UML diagram (Figure INCLUDE NEW UML DIAGRAM).
 
-We also altered the IO back end code significantly towards a number of goals: a homogeneous interface across file formats, protecting read/write permissions, and less code reproduction. 
-Starting with an abstract base class IO, which includes methods handling how all files will be treated, we specify that files should be closed on garbage collection, and files of the specified type should be opened if the class constructor is passed a file path. 
-Classes specifying IO operations specific to file-format, like opening files and creating sub directories inherit directly from IO. 
-Parallel to this, we specify the abstract base classes Reader and Writer, which specify the interface for any IO class that reads from or writes to file, respectively. 
-The utility of this inheritance structure, shown in Figure \ref{fig:EQIOUML}, is that one only needs to specify a file format wrapper for IO and read or write functions to have a reader or writer that can be hot-swapped for any other. 
+We also altered the IO back end code significantly towards a number of goals: a homogeneous interface across file formats, protecting read/write permissions, and less code reproduction.
+Starting with an abstract base class IO, which includes methods handling how all files will be treated, we specify that files should be closed on garbage collection, and files of the specified type should be opened if the class constructor is passed a file path.
+Classes specifying IO operations specific to file-format, like opening files and creating sub directories inherit directly from IO.
+Parallel to this, we specify the abstract base classes Reader and Writer, which specify the interface for any IO class that reads from or writes to file, respectively.
+The utility of this inheritance structure, shown in Figure \ref{fig:EQIOUML}, is that one only needs to specify a file format wrapper for IO and read or write functions to have a reader or writer that can be hot-swapped for any other.
 
 
 \begin{figure}[h]
@@ -213,6 +213,23 @@ The utility of this inheritance structure, shown in Figure \ref{fig:EQIOUML}, is
 	\includegraphics[width=\textwidth]{figs/Equilibrium_IO_UML.pdf}
 	\caption{UML Diagram for the new Eqiulibrium IO setup.}
 	\label{fig:EQIOUML}
+\end{figure}
+
+%
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1.0\linewidth,center]{./figs/DESC_UML.pdf}
+	\caption{Class Diagram}
+	\label{fig:UML}
+\end{figure}
+
+
+%
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth,center]{./figs/EquilibriumIO_UML.pdf}
+	\caption{IO}
+	\label{fig:IO_UML}
 \end{figure}
 
 \section{Development Process}
@@ -232,7 +249,7 @@ But, when it came time to bring the branches back into master, we realized that 
 This created a headache when it came time to merge Transform into dev, as not only merge conflicts had to be resolved, but also other working parts from other feature branches were broken.
 
 How we ended up resolving this issue was to first merge the other, less broadly-changing feature branches into master.
-Then, from the Transform branch, we cherry-picked the latest commits onto master into Transform.
+Then, from the Transform branch, we cherry-picked the latest commits from master into Transform.
 With this, we could then make the necessary changes to allow Transform to play nice with the other branch commits, while also keeping the dev branch strictly for testing and not for bug-fixing commits.
 So, we were able to modify the other necessary parts of the code to allow it to run with the Transform class, and then ended up merging back to master.
 
@@ -248,7 +265,7 @@ Thus, we learned the hard way that the dev branch should never be advanced alone
 
 \subsection{Continuous Integration}
 
-The continuous integration workflow with automated tested helped us catch bugs as new code was developed.
+The continuous integration workflow with automated testing helped us catch bugs as new code was developed.
 In our requirements file we initially listed support for the latest version of JAX, version 0.2.5.
 JAX is still being actively developed and there have been major changes since the DESC code was first written.
 When pushing changes to the new Transform structure that relies heavily on the use of jax.numpy arrays, the new changes were failing the tests on the virtual machines that were running JAX, but passing on our local computers without JAX.
@@ -256,6 +273,7 @@ This problem was puzzling, because JAX is intended to replicate most of the usua
 Around the same time, an independent user of the code had also reported a problem with running JAX on the original DESC repository.
 It turned out that some of the operations we were using were no longer supported in the newer version of JAX, and reducing the installation requirement to version 0.1.77 resolved the issue.
 The lesson learned was that maintaining compatibility with other software packages can be laborsome, but frequent testing (from both automated tests and beta users) can help catch problems when they arise.
+
 
 \section{Profiling Results}
 
@@ -295,6 +313,33 @@ Talk about how the tests were not performed with JAX
 	\caption{Relative portion of time to evaluate the Fourier-Zernike basis function spent in each subfunction, for different stages of optimization.}
 	\label{fig:compute_opt}
 \end{figure}
+
+\section{Future Work}
+
+\subsection{Finish Realization of Object-Oriented Design}
+
+The most immediate future work for this project would be to complete the refactoring of the code into an object-oriented design.
+The main part of the code that remains in a functional implementation is the outer loop solver.
+While the refactoring we completed did increase the legibility of the outer loop solver function, there are still aspects that would benefit from being modularized.
+This would come in the form of creating the EquilibriumSolver and Optimizer classes from the UML diagram, which would handle the logic of the inner-outer loop optimization algorithm.
+We foresee the most difficulty in this task coming from deciding how to split the necessary steps and control logic across the respective objects.
+For example, in the outer loop, a new Equilibrium must be created and perturbed, in order to then be sent into the inner optimization loop.
+Should the EquilibriumSolver object be able to create new Equilibrium objects, even though it is not directly connected to an Equilibrium?
+We have in our UML diagram an outline of what we think is the best to approach, but it is the concrete answers to these questions that we will need to decide in order to finish the implementation of our complete design.
+
+\subsection{Expand Testing Suite}
+While we did increase the percentage of code covered by tests by roughly 20\%, there is still a lot of room for improvement.
+Increasing the modularity of the code helped us to more easily implement unit tests for the lower level, simpler components.
+Though there are still simple classes left for us to cover with unit tests, among what is remaining are the classes that take these simpler objects and use them in a more complex way to return some physically meaningful quantites.
+To improve testing given this, we have two goals for future work.
+
+The first is to have a broader integration testing suite, where we test the overall output of our code against analytically solvable solutions.
+While this sort of testing suite cannot narrow down issues to specific objects or functions, it can narrow down issues to certain types of problems.
+For example, an equilibrium that is axisymmetric is much simpler to compute than a non-axisymmetric equilibrium, as they are different dimensions (2D versus 3D).
+So, with integration testing of both types of equilibria, we would be able to at least see if problems arise only with certain types of equilibria.
+Additionally, this sort of testing suite would instill confidence in the output of the code.
+
+The second is to
 
 \bibliography{sources}
 
