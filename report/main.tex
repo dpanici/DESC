@@ -140,21 +140,29 @@ JAX provides automatic differentiation of arbitrary Python functions by overload
 It also allows for operations to be computed on a GPU, which can greatly accelerate the matrix-vector operations necessary for the optimization algorithm.
 The initial state of the code had JAX implemented, but was disorganized about when it should be used over regular NumPy operations.
 
-\subsection{Goals?}
+\subsection{Goals}
 
-While DESC in its current state is functional, it does not have a unified or high-level class structure organization to it.
-It also is not extensively covered by testing, has not been thoroughly profiled for speed optimization, and lacks certain features that would make it more useful to the user. So, the aim of our project is to work on improving DESC by:
+While DESC was functional in its initial state, it did not have a unified or high-level class structure organization to it.
+It also was not extensively covered by testing, had not been thoroughly profiled for speed optimization, and lacked certain features that would make it more useful to the user.
+With those shortcoming in mind, the aim of this project was to improve DESC in the following ways:
 %
 \begin{enumerate}
-\item Profiling the code to understand bottlenecks, and exploring optimization options.
-\item Re-organizing the code into a modular class structure that will allow it to be more easily human-readable, as well as allow greater flexibility in how a given equilibrium is solved and analyzed.
-\item Expanding the existing testing suite.
-\item Adding a plotting class to expand the equilibrium visualization capabilities of DESC.
+\item Refactor the code into a modular class structure
+\item Expand the coverage of the existing testing suite
+\item Profile the code to identify bottlenecks and explore optimization options
+\item Extend the plotting capabilities to provide more solution visualization capabilities
 \end{enumerate}
-%
-As DESC is written in Python, we plan to use the Python profiling modules profile and cProfile to identify where the code spends most of its time. Once we have completed profiling the code, we will identify the routes we can take to optimize the performance of the code. This will necessarily depend on the results of the profiling, but some avenues we anticipate we could take is to parallelize any embarrasingly parallel tasks in the code to work across multiple CPUs. There are different tools we can use to do this, one route could be to utilize the parallel processing Python module multiprocessing, which allows for splitting tasks across multiple threads of a CPU. Additional possible optimization paths could relate to the GPU. Currently, the solution resolution possible running DESC and utilizing the GPU is limited by memory on the GPU, as the jacobian necessary for the optimization algorithm's computations on the GPU becomes larger than the memory on the GPU can handle. One possible way we can explore to remedy this is to split up the jacobian and evaluate parts of the computation on different GPUs in parallel, or on the same GPU but only in chunks at a time, and recover the full result on the CPU, to avoid GPU memory issues.
 
-We intend the outcome of our project to include a CI automated testing suite that expands to cover a majority of the code (as opposed to the current 22\% coverage). In addition, we intend to restructure the code to follow a much more modular class structure that decouples the physics of the problem being solved from the numerical methods, as shown below in Figure \ref{fig:uml}. This will also allow us to more easily write unit tests and understand where things are slow or are incorrect (if tests are failing). We also plan to have a Plotting class to allow for more flexible, interactive analysis of results. Finally, we aim to achieve a marked improvement in code performance, or at least identify the bottlenecks in order to allow for future optimization.
+As mentioned in the previous section, the previous version of DESC had very minimal class structure.
+This resulted in cumbersome control logic and unclear interfaces between different parts of the code.
+Our primary goal of this project is to refactor DESC into a class structure that takes advantage of object-oriented programming.
+This improvement will streamline the code and provide a consistent application programming interface (API) for adding new functionality as users expand the software to meet additional applications.
+The new modularity will also make it easier to perform unit testing to ensure that the code is implemented properly and returns the desired output.
+The existing continuous integration (CI) automated testing suite only covered 22\% of the DESC code, and our goal was to increase this converage to over 50\%.
+Computational efficiency is also essential for DESC, since it was developed in the hope of finding stellarator equilibria faster than other codes.
+Once the major refactoring was complete, we planned to profile the code to identify the bottlenecks and pursue any opportunities for optimization.
+Finally, we also intended to create a class responsible for plotting 
+Accurate solutions are only useful if they can be viewed, and the goal of this effort was to provide the user with a more flexible and interactive analysis tool.
 
 \section{Design}
 
@@ -179,6 +187,7 @@ Then methods of this class would be called to plot specified parts of the soluti
 Another envisioned use of the code is in an interactive sense, where a user could in a script instantiate an Equilibrium and an EquilibriaFamily from an input file, and from there use the solve method of EquilibriaFamily to solve from the initial guess through to the final Equilibrium at the desired resolution. In this way, the user can use the Plot class to visualize not only the final result at the desired resolution, but also to see intermediate solutions (located as earlier Equilibrium objects inside of EquilibriaFamily) as the outer solving loop progressively stepped up the resolution of the solution.
 
 \subsection{Final Implementation}
+
 While the refactored project largely follows the original design plan, we made a number of changes made during development.
 One such change was to the Equilibrium\_IO class, which is no longer a class, but a collection of classes.
 In order to resolve a circular import error, the IO either had to be fully agnostic of the objects it was saving and loading, or it had to have save and load functions specific to each object.
@@ -232,6 +241,10 @@ It turned out that some of the operations we were using were no longer supported
 The lesson learned was that maintaining compatibility with other software packages can be laborsome, but frequent testing (from both automated tests and beta users) can help catch problems when they arise.
 
 \section{Profiling Results}
+
+
+As DESC is written in Python, we plan to use the Python profiling modules profile and cProfile to identify where the code spends most of its time. Once we have completed profiling the code, we will identify the routes we can take to optimize the performance of the code. This will necessarily depend on the results of the profiling, but some avenues we anticipate we could take is to parallelize any embarrasingly parallel tasks in the code to work across multiple CPUs. There are different tools we can use to do this, one route could be to utilize the parallel processing Python module multiprocessing, which allows for splitting tasks across multiple threads of a CPU. Additional possible optimization paths could relate to the GPU. Currently, the solution resolution possible running DESC and utilizing the GPU is limited by memory on the GPU, as the jacobian necessary for the optimization algorithm's computations on the GPU becomes larger than the memory on the GPU can handle. One possible way we can explore to remedy this is to split up the jacobian and evaluate parts of the computation on different GPUs in parallel, or on the same GPU but only in chunks at a time, and recover the full result on the CPU, to avoid GPU memory issues.
+
 
 The actual evaluation time for all of these tests depends on the resolution used.  In this case, it was...
 
