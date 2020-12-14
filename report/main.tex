@@ -231,7 +231,7 @@ Thus, we learned the hard way that the dev branch should never be advanced alone
 
 \subsection{Continuous Integration}
 
-The continuous integration workflow with automated tested helped us catch bugs as new code was developed.
+The continuous integration workflow with automated testing helped us catch bugs as new code was developed.
 In our requirements file we initially listed support for the latest version of JAX, version 0.2.5.
 JAX is still being actively developed and there have been major changes since the DESC code was first written.
 When pushing changes to the new Transform structure that relies heavily on the use of jax.numpy arrays, the new changes were failing the tests on the virtual machines that were running JAX, but passing on our local computers without JAX.
@@ -239,6 +239,7 @@ This problem was puzzling, because JAX is intended to replicate most of the usua
 Around the same time, an independent user of the code had also reported a problem with running JAX on the original DESC repository.
 It turned out that some of the operations we were using were no longer supported in the newer version of JAX, and reducing the installation requirement to version 0.1.77 resolved the issue.
 The lesson learned was that maintaining compatibility with other software packages can be laborsome, but frequent testing (from both automated tests and beta users) can help catch problems when they arise.
+
 
 \section{Profiling Results}
 
@@ -284,15 +285,26 @@ Talk about how the tests were not performed with JAX
 \subsection{Finish Realization of Object-Oriented Design}
 The most immediate future work for this project would be to complete the refactoring of the code into an object-oriented design.
 The main part of the code that remains in a functional implementation is the outer loop solver.
-While the refactoring we completed did increase the legibility of the outer loop solver function, there are still aspects of it that would benefit from refactoring.
-This would come in the form of creating the EquilibriumSolver and Optimizer classes from the UML diagram, inside of which would handle the logic of the inner-outer loop optimization algorithm.
+While the refactoring we completed did increase the legibility of the outer loop solver function, there are still aspects that would benefit from being modularized.
+This would come in the form of creating the EquilibriumSolver and Optimizer classes from the UML diagram, which would handle the logic of the inner-outer loop optimization algorithm.
 We foresee the most difficulty in this task coming from deciding how to split the necessary steps and control logic across the respective objects.
 For example, in the outer loop, a new Equilibrium must be created and perturbed, in order to then be sent into the inner optimization loop.
 Should the EquilibriumSolver object be able to create new Equilibrium objects, even though it is not directly connected to an Equilibrium?
-We have in our UML diagram an outline of what we think is the best way to approach this, but it is the concrete answers to these questions that we will need to decide in order to finish the implementation of our complete design.
+We have in our UML diagram an outline of what we think is the best to approach, but it is the concrete answers to these questions that we will need to decide in order to finish the implementation of our complete design.
 
+\subsection{Expand Testing Suite}
+While we did increase the percentage of code covered by tests by roughly 20\%, there is still a lot of room for improvement.
+Increasing the modularity of the code helped us to more easily implement unit tests for the lower level, simpler components.
+Though there are still simple classes left for us to cover with unit tests, among what is remaining are the classes that take these simpler objects and use them in a more complex way to return some physically meaningful quantites.
+To improve testing given this, we have two goals for future work. 
 
+The first is to have a broader integration testing suite, where we test the overall output of our code against analytically solvable solutions.
+While this sort of testing suite cannot narrow down issues to specific objects or functions, it can narrow down issues to certain types of problems.
+For example, an equilibrium that is axisymmetric is much simpler to compute than a non-axisymmetric equilibrium, as they are different dimensions (2D versus 3D).
+So, with integration testing of both types of equilibria, we would be able to at least see if problems arise only with certain types of equilibria.
+Additionally, this sort of testing suite would instill confidence in the output of the code.
 
+The second is to 
 
 \bibliography{sources}
 
