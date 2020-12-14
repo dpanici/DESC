@@ -339,7 +339,10 @@ For example, an equilibrium that is axisymmetric is much simpler to compute than
 So, with integration testing of both types of equilibria, we would be able to at least see if problems arise only with certain types of equilibria.
 Additionally, this sort of testing suite would instill confidence in the output of the code.
 
-The second is to
+The second is to use the mock object features of the Python unit testing modules to contrive simple examples for these more complex classes.
+This would work by allowing us to create mock objects to take the place of objects that would normally be created by reading an input file and performing intermediate calculations.
+We would then be able to create simple scenarios where we could more easily check the expected output, when we have control over exactly what the inputs into the function are.
+
 
 \bibliography{sources}
 
