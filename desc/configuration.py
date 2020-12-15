@@ -550,7 +550,7 @@ class Configuration(IOAble):
         return magnetic_field
 
     def compute_plasma_current(self, grid:Grid) -> dict:
-    """Computes current density field at node locations by calling :func:`desc.configuration.compute_plasma_current`
+        """Computes current density field at node locations by calling :func:`desc.configuration.compute_plasma_current`
 
         Parameters
         ----------
