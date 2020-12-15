@@ -64,7 +64,7 @@ class Configuration(IOAble):
         ----------
         inputs : dict
             dict containing keys necessary to define a Configuration. 
-            Necessary keys are defines in _init_from_inputs. If None, will attempt to load Configuration from given input file.
+            Necessary keys are defined in _init_from_inputs. If None, will attempt to load Configuration from given input file.
         load_from : str file path OR file instance
             file to initialize from
         file_format : str 
@@ -109,23 +109,23 @@ class Configuration(IOAble):
         ----------
         inputs : dict, optional
             Dictionary of inputs with the following required keys:
-                L :
-                M :
-                N :
-                cP :
-                cI :
-                Psi :
-                NFP :
-                bdry :
+                L : int, radial resolution
+                M : int, poloidal resolution
+                N : int, toroidal resolution
+                cP : ndarray, pressure spectral coefficients, indexed as (lm,n) flattened in row major order
+                cI : ndarray, iota spectral coefficients, indexed as (lm,n) flattened in row major order
+                Psi : float, total toroidal flux (in Webers) within LCFS
+                NFP : int, number of field periods
+                bdry : ndarray, array of fourier coeffs [m,n,Rcoeff, Zcoeff]
             And the following optional keys:
-                sym :
-                index :
-                bdry_mode :
+                sym : bool, is the problem stellarator symmetric or not, default is False
+                index : str, type of Zernike indexing scheme to use, default is 'ansi'
+                bdry_mode : str, how to calculate error at bdry, default is 'spectral'
                 bdry_ratio :
                 axis :
-                cR :
-                cZ :
-                cL :
+                cR : ndarray, spectral coefficients of R
+                cZ : ndarray, spectral coefficients of Z
+                cL : ndarray, spectral coefficients of L
 
 
         Raises
@@ -277,6 +277,7 @@ class Configuration(IOAble):
 
     @property
     def cR(self):
+        """ spectral coefficients of R """
         return self.__cR
 
     @cR.setter
@@ -285,6 +286,7 @@ class Configuration(IOAble):
 
     @property
     def cZ(self):
+        """ spectral coefficients of Z """
         return self.__cZ
 
     @cZ.setter
@@ -293,6 +295,7 @@ class Configuration(IOAble):
         
     @property
     def cL(self):
+        """ spectral coefficients of L """
         return self.__cL
 
     @cL.setter
@@ -301,6 +304,7 @@ class Configuration(IOAble):
         
     @property
     def cRb(self):
+        """ spectral coefficients of R at the boundary"""
         return self.__cRb
 
     @cRb.setter
@@ -309,6 +313,7 @@ class Configuration(IOAble):
 
     @property
     def cZb(self):
+        """ spectral coefficients of Z at the boundary"""
         return self.__cZb
 
     @cZb.setter
@@ -317,6 +322,7 @@ class Configuration(IOAble):
 
     @property
     def cP(self):
+        """ spectral coefficients of pressure """
         return self.__cP
 
     @cP.setter
@@ -325,6 +331,7 @@ class Configuration(IOAble):
 
     @property
     def cI(self):
+        """ spectral coefficients of iota """
         return self.__cI
 
     @cI.setter
@@ -333,6 +340,7 @@ class Configuration(IOAble):
 
     @property
     def Psi(self) -> float:
+        """ float, total toroidal flux (in Webers) within LCFS"""
         return self.__Psi
 
     @Psi.setter
@@ -341,6 +349,7 @@ class Configuration(IOAble):
 
     @property
     def NFP(self) -> int:
+        """ int, number of field periods"""
         return self.__NFP
 
     @NFP.setter
@@ -349,6 +358,14 @@ class Configuration(IOAble):
 
     @property
     def R_basis(self) -> Basis:
+        """
+        Spectral basis for R
+
+        Returns
+        -------
+        Basis
+
+        """
         return self.__R_basis
 
     @R_basis.setter
@@ -357,6 +374,14 @@ class Configuration(IOAble):
 
     @property
     def Z_basis(self) -> Basis:
+        """
+        Spectral basis for Z
+
+        Returns
+        -------
+        Basis
+
+        """
         return self.__Z_basis
 
     @Z_basis.setter
@@ -365,6 +390,14 @@ class Configuration(IOAble):
 
     @property
     def L_basis(self) -> Basis:
+        """
+        Spectral basis for L
+
+        Returns
+        -------
+        Basis
+
+        """
         return self.__L_basis
 
     @L_basis.setter
@@ -373,6 +406,14 @@ class Configuration(IOAble):
 
     @property
     def Rb_basis(self) -> Basis:
+        """
+        Spectral basis for R at the boundary
+
+        Returns
+        -------
+        Basis
+
+        """
         return self.__Rb_basis
 
     @Rb_basis.setter
@@ -381,6 +422,14 @@ class Configuration(IOAble):
 
     @property
     def Zb_basis(self) -> Basis:
+        """
+        Spectral basis for Z at the boundary
+
+        Returns
+        -------
+        Basis
+
+        """
         return self.__Zb_basis
 
     @Zb_basis.setter
@@ -389,6 +438,14 @@ class Configuration(IOAble):
 
     @property
     def P_basis(self) -> Basis:
+        """
+        Spectral basis for pressure
+
+        Returns
+        -------
+        Basis
+
+        """
         return self.__P_basis
 
     @P_basis.setter
@@ -397,6 +454,14 @@ class Configuration(IOAble):
 
     @property
     def I_basis(self) -> Basis:
+        """
+        Spectral basis for iota
+
+        Returns
+        -------
+        Basis
+
+        """
         return self.__I_basis
 
     @I_basis.setter
@@ -708,6 +773,14 @@ class Equilibrium(Configuration,IOAble):
 
     @property
     def initial(self) -> Configuration:
+        """
+        Initial Configuration from which the Equilibrium was solved
+
+        Returns
+        -------
+        Configuration
+
+        """
         return self.__initial
 
     @initial.setter
@@ -716,6 +789,7 @@ class Equilibrium(Configuration,IOAble):
 
     @property
     def x(self):
+        """ State vector of (cR,cZ,cL) """
         return self._Configuration__x
 
     @x.setter
@@ -729,6 +803,7 @@ class Equilibrium(Configuration,IOAble):
 
     @property
     def solved(self) -> bool:
+        """Boolean, if the Equilibrium has been solved or not"""
         return self.__solved
 
     @property
