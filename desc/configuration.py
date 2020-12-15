@@ -42,7 +42,7 @@ def unpack_state(x, nR, nZ):
 
 class Configuration(IOAble):
 
-    """Configuration constains information about a plasma state, including the
+    """Configuration contains information about a plasma state, including the
        shapes of flux surfaces and profile inputs. It can compute additional
        information, such as the magnetic field and plasma currents.
     """
@@ -63,11 +63,12 @@ class Configuration(IOAble):
         Parameters
         ----------
         inputs : dict
-            DESCRIPTION
-        load_from : str OR ...
-            DESCRIPTION
-        file_format : str
-            DESCRIPTION
+            dict containing keys necessary to define a Configuration. 
+            Necessary keys are defines in _init_from_inputs. If None, will attempt to load Configuration from given input file.
+        load_from : str file path OR file instance
+            file to initialize from
+        file_format : str 
+            file format of file initializing from. Default is 'hdf5'
 
         Returns
         -------
@@ -403,6 +404,21 @@ class Configuration(IOAble):
         self.__I_basis = I_basis
 
     def compute_coordinates(self, grid:Grid) -> dict:
+        """Converts from spectral to real space by calling :func:`desc.configuration.compute_coordinates` 
+
+        Parameters
+        ----------
+        grid : Grid
+            Collocation grid containing the (rho, theta, zeta) coordinates of the nodes at which to evaluate R and Z.
+
+        Returns
+        -------
+        coords : dict
+            dictionary of ndarray, shape(N_nodes,) of coordinates evaluated at node locations.
+            keys are of the form 'X_y' meaning the derivative of X wrt to y
+
+        """
+
         R_transform = Transform(grid, self.__R_basis, derivs=0)
         Z_transform = Transform(grid, self.__Z_basis, derivs=0)
         coords = compute_coordinates(self.__cR, self.__cZ, R_transform,
@@ -410,6 +426,20 @@ class Configuration(IOAble):
         return coords
 
     def compute_coordinate_derivatives(self, grid:Grid) -> dict:
+        """Converts from spectral to real space and evaluates derivatives of R,Z wrt to SFL coords by calling :func:`desc.configuration.compute_coordinate_derivatives`
+
+        Parameters
+        ----------
+        grid : Grid
+            Collocation grid containing the (rho, theta, zeta) coordinates of the nodes at which to evaluate derivatives.
+
+        Returns
+        -------
+        coord_der : dict
+            dictionary of ndarray, shape(N_nodes,) of coordinate derivatives evaluated at node locations.
+            keys are of the form 'X_y' meaning the derivative of X wrt to y
+
+        """
         R_transform = Transform(grid, self.__R_basis, derivs=3)
         Z_transform = Transform(grid, self.__Z_basis, derivs=3)
         coord_der = compute_coordinate_derivatives(self.__cR, self.__cZ,
@@ -417,6 +447,22 @@ class Configuration(IOAble):
         return coord_der
 
     def compute_covariant_basis(self, grid:Grid) -> dict:
+        """Computes covariant basis vectors at grid points by calling :func:`desc.configuration.compute_covariant_basis`
+        
+
+        Parameters
+        ----------
+        grid : Grid
+            Collocation grid containing the (rho, theta, zeta) coordinates of the nodes at which to find the covariant basis vectors.
+
+        Returns
+        -------
+        cov_basis : dict
+            dictionary of ndarray containing covariant basis
+            vectors and derivatives at each node. Keys are of the form 'e_x_y',
+            meaning the unit vector in the x direction, differentiated wrt to y.
+
+        """
         R_transform = Transform(grid, self.__R_basis, derivs=3)
         Z_transform = Transform(grid, self.__Z_basis, derivs=3)
         coord_der = compute_coordinate_derivatives(self.__cR, self.__cZ,
@@ -425,6 +471,21 @@ class Configuration(IOAble):
         return cov_basis
 
     def compute_contravariant_basis(self, grid:Grid) -> dict:
+        """Computes contravariant basis vectors and jacobian elements by calling :func:`desc.configuration.compute_contravariant_basis`
+
+        Parameters
+        ----------
+        grid : Grid
+            Collocation grid containing the (rho, theta, zeta) coordinates of 
+            the nodes at which to find the contravariant basis vectors and the 
+            jacobian elements.
+
+        Returns
+        -------
+        con_basis : dict
+            dictionary of ndarray containing contravariant basis vectors and jacobian elements
+
+        """
         R_transform = Transform(grid, self.__R_basis, derivs=3)
         Z_transform = Transform(grid, self.__Z_basis, derivs=3)
         coord_der = compute_coordinate_derivatives(self.__cR, self.__cZ,
@@ -435,6 +496,23 @@ class Configuration(IOAble):
         return con_basis
 
     def compute_jacobian(self, grid:Grid) -> dict:
+        """Computes coordinate jacobian and derivatives by calling :func:`desc.configuration.compute_jacobian`
+        
+        Parameters
+        ----------
+        grid : Grid
+            Collocation grid containing the (rho, theta, zeta) coordinates of 
+            the nodes at which to find the coordinate jacobian elements and its
+            partial derivatives.
+
+        Returns
+        -------
+        jacobian : dict
+            dictionary of ndarray, shape(N_nodes,) of coordinate
+            jacobian and partial derivatives. Keys are of the form `g_x` meaning
+            the x derivative of the coordinate jacobian g
+
+        """
         R_transform = Transform(grid, self.__R_basis, derivs=3)
         Z_transform = Transform(grid, self.__Z_basis, derivs=3)
         coord_der = compute_coordinate_derivatives(self.__cR, self.__cZ,
@@ -444,6 +522,22 @@ class Configuration(IOAble):
         return jacobian
 
     def compute_magnetic_field(self, grid:Grid) -> dict:
+        """Computes magnetic field components at node locations by calling :func:`desc.configuration.compute_magnetic_field`
+        
+        Parameters
+        ----------
+        grid : Grid
+            Collocation grid containing the (rho, theta, zeta) coordinates of 
+            the nodes at which to evaluate the magnetic field components
+
+        Returns
+        -------
+        magnetic_field: dict
+            dictionary of ndarray, shape(N_nodes,) of magnetic field
+            and derivatives. Keys are of the form 'B_x_y' or 'B^x_y', meaning the
+            covariant (B_x) or contravariant (B^x) component of the magnetic field, with the derivative wrt to y.
+
+        """
         R_transform = Transform(grid, self.__R_basis, derivs=3)
         Z_transform = Transform(grid, self.__Z_basis, derivs=3)
         I_transform = Transform(grid, self.__I_basis, derivs=1)
@@ -456,6 +550,22 @@ class Configuration(IOAble):
         return magnetic_field
 
     def compute_plasma_current(self, grid:Grid) -> dict:
+    """Computes current density field at node locations by calling :func:`desc.configuration.compute_plasma_current`
+
+        Parameters
+        ----------
+        grid : Grid
+            Collocation grid containing the (rho, theta, zeta) coordinates of 
+            the nodes at which to evaluate the plasma current components
+
+        Returns
+        -------
+        plasma_current : dict
+            dictionary of ndarray, shape(N_nodes,) of current field.
+            Keys are of the form 'J^x_y' meaning the contravariant (J^x)
+            component of the current, with the derivative wrt to y.
+
+        """
         R_transform = Transform(grid, self.__R_basis, derivs=3)
         Z_transform = Transform(grid, self.__Z_basis, derivs=3)
         I_transform = Transform(grid, self.__I_basis, derivs=1)
@@ -470,6 +580,20 @@ class Configuration(IOAble):
         return plasma_current
 
     def compute_magnetic_field_magnitude(self, grid:Grid) -> dict:
+        """Computes magnetic field magnitude at node locations by calling :func:`desc.configuration.compute_magnetic_field_magnitude`
+        
+        Parameters
+        ----------
+        grid : Grid
+            Collocation grid containing the (rho, theta, zeta) coordinates of 
+            the nodes at which to evaluate the magnetic field magnitude and derivatives
+
+        Returns
+        -------
+        magnetic_field_mag : dict
+            dictionary of ndarray, shape(N_nodes,) of magnetic field magnitude and derivatives
+
+        """
         R_transform = Transform(grid, self.__R_basis, derivs=3)
         Z_transform = Transform(grid, self.__Z_basis, derivs=3)
         I_transform = Transform(grid, self.__I_basis, derivs=1)
@@ -484,6 +608,20 @@ class Configuration(IOAble):
         return magnetic_field_mag
 
     def compute_force_magnitude(self, grid:Grid) -> dict:
+        """Computes force error magnitude at node locations by calling :func:`desc.configuration.compute_force_magnitude`
+
+        Parameters
+        ----------
+        grid : Grid
+            Collocation grid containing the (rho, theta, zeta) coordinates of 
+            the nodes at which to evaluate the force error magnitudes
+
+        Returns
+        -------
+        force_mag : dict
+            dictionary of ndarray, shape(N_nodes,) of force magnitudes
+
+        """
         R_transform = Transform(grid, self.__R_basis, derivs=3)
         Z_transform = Transform(grid, self.__Z_basis, derivs=3)
         I_transform = Transform(grid, self.__I_basis, derivs=1)
@@ -769,7 +907,7 @@ def compute_coordinates(cR, cZ, R_transform, Z_transform):
     Returns
     -------
     coords : dict
-        dictionary of ndarray, shape(N_nodes,) of coordinates evaluated at node locations
+        dictionary of ndarray, shape(N_nodes,) of coordinates evaluated at node locations.
         keys are of the form 'X_y' meaning the derivative of X wrt to y
 
     """
@@ -802,7 +940,7 @@ def compute_coordinate_derivatives(cR, cZ, R_transform, Z_transform, zeta_ratio=
     Returns
     -------
     coord_der : dict
-        dictionary of ndarray, shape(N_nodes,) of coordinate derivatives evaluated at node locations
+        dictionary of ndarray, shape(N_nodes,) of coordinate derivatives evaluated at node locations.
         keys are of the form 'X_y' meaning the derivative of X wrt to y
 
     """

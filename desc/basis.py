@@ -102,6 +102,14 @@ class Basis(IOAble,ABC):
 
     @abstractmethod
     def change_resolution(self) -> None:
+        """Change resolution of the basis to the given resolutions.
+        
+
+        Returns
+        -------
+        None
+
+        """
         pass
 
     @property
@@ -206,7 +214,7 @@ class PowerSeries(Basis):
         return powers(nodes[:, 0], self._Basis__modes[:, 0], dr=derivatives[0])
 
     def change_resolution(self, L:int) -> None:
-        """
+        """Change resolution of the basis to the given resolution. Overrides parent Basis object's change_resolution method.
 
         Parameters
         ----------
@@ -308,7 +316,7 @@ class DoubleFourierSeries(Basis):
         return poloidal*toroidal
 
     def change_resolution(self, M:int, N:int) -> None:
-        """
+        """Change resolution of the basis to the given resolutions. Overrides parent Basis object's change_resolution method.
 
         Parameters
         ----------
@@ -504,7 +512,7 @@ class FourierZernikeBasis(Basis):
         return radial*poloidal*toroidal
 
     def change_resolution(self, M:int, N:int, delta_lm:int) -> None:
-        """
+        """Change resolution of the basis to the given resolutions. Overrides parent Basis object's change_resolution method.
 
         Parameters
         ----------
